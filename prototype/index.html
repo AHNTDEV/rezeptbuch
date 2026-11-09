@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rezeptbuch α7R III</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#141210; --panel:#1d1a17; --panel2:#25211d; --line:#3a332c;
+  --ink:#efe7dc; --muted:#a39888; --dim:#6f665a;
+  --amber:#e8a33d; --amber-soft:rgba(232,163,61,.14); --red:#d9614c;
+  --r:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter Tight",system-ui,sans-serif;font-size:15px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px 80px}
+
+/* header */
+header{position:sticky;top:0;z-index:20;background:rgba(20,18,16,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.head{max-width:1180px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+.brand h1{font-family:Fraunces,serif;font-weight:600;font-size:24px;margin:0;letter-spacing:-.01em}
+.brand span{color:var(--muted);font-size:13px}
+.tabs{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px}
+.tabs button{border:0;background:none;padding:7px 14px;border-radius:999px;color:var(--muted);font-weight:500}
+.tabs button.on{background:var(--panel2);color:var(--ink)}
+.btn{border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:10px;font-weight:500}
+.btn:hover{border-color:var(--dim)}
+.btn.primary{background:var(--amber);border-color:var(--amber);color:#1b1206}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.danger{color:var(--red)}
+.btn.small{padding:5px 10px;font-size:13px}
+.film{height:10px;background:repeating-linear-gradient(90deg,transparent 0 10px,#2a2520 10px 18px);opacity:.8}
+
+/* toolbar */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:22px 0 18px}
+.search{flex:1 1 220px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.chip{border:1px solid var(--line);background:none;border-radius:999px;padding:5px 12px;font-size:13px;color:var(--muted)}
+.chip.on{background:var(--amber-soft);border-color:var(--amber);color:var(--amber)}
+
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;text-align:left;padding:0;display:flex;flex-direction:column;transition:transform .15s,border-color .15s}
+.card:hover{transform:translateY(-2px);border-color:var(--dim)}
+.card .img{aspect-ratio:3/2;position:relative;background:#000}
+.card .img img{width:100%;height:100%;object-fit:cover;display:block}
+.badge{position:absolute;top:10px;left:10px;background:rgba(10,9,8,.78);border:1px solid var(--amber);color:var(--amber);font-family:"JetBrains Mono",monospace;font-size:12px;padding:2px 8px;border-radius:6px}
+.card .body{padding:12px 14px 14px}
+.card h3{font-family:Fraunces,serif;font-weight:600;font-size:19px;margin:0 0 4px}
+.card p{margin:0;color:var(--muted);font-size:13.5px}
+.meta{display:flex;gap:10px;margin-top:10px;font-size:12px;color:var(--dim)}
+.empty{border:1px dashed var(--line);border-radius:var(--r);padding:40px;text-align:center;color:var(--muted)}
+
+/* swatch */
+.swatch{position:absolute;inset:0;display:flex;flex-direction:column}
+.swatch .tone{flex:1}
+.swatch .chips{display:grid;grid-template-columns:repeat(6,1fr);height:22%}
+.swatch .note{position:absolute;right:8px;bottom:calc(22% + 6px);font-size:10px;color:rgba(255,255,255,.55);font-family:"JetBrains Mono",monospace}
+
+/* overlay sheet */
+.sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:30px 12px}
+.sheet.open{display:flex}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;width:100%;max-width:820px;overflow:hidden}
+.panel-head{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.panel-head h2{font-family:Fraunces,serif;font-weight:600;font-size:22px;margin:0;margin-right:auto}
+.x{border:0;background:none;font-size:22px;color:var(--muted);padding:2px 8px}
+.panel-body{padding:18px}
+.hero{aspect-ratio:3/2;position:relative;border-radius:12px;overflow:hidden;background:#000}
+.hero img{width:100%;height:100%;object-fit:contain;display:block;background:#000}
+.thumbs{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.thumbs .t{width:64px;height:44px;border-radius:6px;overflow:hidden;border:2px solid transparent;padding:0;background:#000;position:relative}
+.thumbs .t.on{border-color:var(--amber)}
+.thumbs .t img{width:100%;height:100%;object-fit:cover}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.look{font-size:16px;margin:14px 0 4px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tag{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 9px;color:var(--muted)}
+.callout{background:var(--amber-soft);border:1px solid rgba(232,163,61,.35);border-radius:10px;padding:10px 12px;font-size:13.5px;margin:12px 0}
+.src{font-size:13px;color:var(--muted)}
+.src a{color:var(--amber)}
+
+.vals{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+@media (max-width:640px){.vals{grid-template-columns:1fr}}
+.group{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.group h4{margin:0 0 8px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);font-weight:600}
+.row{display:flex;justify-content:space-between;gap:10px;padding:4px 0;border-bottom:1px dashed #332d27;font-size:14px}
+.row:last-child{border-bottom:0}
+.row span:first-child{color:var(--muted)}
+.row span:last-child{font-family:"JetBrains Mono",monospace}
+.depth{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:4px}
+.depth div{text-align:center;border-radius:8px;padding:6px 0;font-family:"JetBrains Mono",monospace;font-size:13px;background:#1a1714}
+.depth div b{display:block;font-size:11px;font-weight:600}
+
+/* entry mode */
+.steps{list-style:none;margin:0;padding:0}
+.step{display:flex;gap:12px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
+.step .box{width:24px;height:24px;border-radius:7px;border:2px solid var(--dim);flex:none;display:grid;place-items:center;font-size:14px;color:#1b1206}
+.step.done .box{background:var(--amber);border-color:var(--amber)}
+.step.done .lbl{color:var(--dim);text-decoration:line-through}
+.step .lbl{flex:1}
+.step .v{font-family:"JetBrains Mono",monospace;font-size:18px;font-weight:600}
+.step.sec{cursor:default;border-bottom:0;padding:18px 4px 4px;color:var(--amber);font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.progress{height:6px;background:var(--panel2);border-radius:99px;overflow:hidden;margin:4px 0 14px}
+.progress div{height:100%;background:var(--amber);transition:width .2s}
+.path{font-size:13px;color:var(--muted);background:var(--panel2);border-radius:10px;padding:10px 12px}
+
+/* slots */
+.slots{display:grid;gap:10px;margin-top:22px}
+.slot{display:grid;grid-template-columns:72px 1fr auto;gap:14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.slot .pp{font-family:"JetBrains Mono",monospace;font-weight:600;font-size:18px;color:var(--amber)}
+.slot .name{font-family:Fraunces,serif;font-size:18px}
+.slot .sub{font-size:12.5px;color:var(--muted)}
+.slot select{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 8px;max-width:190px}
+.intro{color:var(--muted);max-width:720px;margin-top:22px}
+
+/* editor */
+.form{display:grid;gap:16px}
+.fgroup{border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.fgroup legend{padding:0 6px;color:var(--amber);font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
+label.f.wide{grid-column:1/-1}
+.f input,.f select,.f textarea{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 9px;color:var(--ink);font-size:14px}
+.f textarea{min-height:64px;resize:vertical}
+.hint{font-size:12px;color:var(--dim)}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);padding:10px 16px;border-radius:10px;z-index:80;display:none}
+.status{font-size:12.5px;color:var(--muted);margin-top:14px}
+.confirm{display:none;gap:8px;align-items:center;flex-wrap:wrap;background:rgba(217,97,76,.12);border:1px solid rgba(217,97,76,.4);border-radius:10px;padding:10px 12px;margin-bottom:12px}
+.confirm.open{display:flex}
+</style>
+</head>
+<body>
+<header>
+  <div class="head">
+    <div class="brand"><h1>Rezeptbuch</h1><span>Sony α7R III · Bildprofile</span></div>
+    <div class="tabs" role="tablist">
+      <button data-view="gallery" class="on">Galerie</button>
+      <button data-view="slots">PP-Plätze</button>
+    </div>
+    <button class="btn primary" id="newBtn" hidden>+ Rezept</button>
+  </div>
+  <div class="film"></div>
+</header>
+
+<div class="wrap">
+  <section id="gallery">
+    <div class="toolbar">
+      <input class="search" id="q" placeholder="Rezepte durchsuchen …" autocomplete="off">
+      <div id="tagbar" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="status" id="status">Lade Rezepte …</div>
+  </section>
+
+  <section id="slots" hidden>
+    <p class="intro">Die α7R III hat zehn Bildprofil-Plätze. Leg hier fest, welches Rezept auf welchem Platz liegt. Die Kamera merkt sich nur die Bildprofil-Werte, den Weißabgleich stellst du beim Wechsel separat ein – er steht deshalb mit dabei. Wer PP-Plätze auch für Video nutzt, lässt sich am besten ein paar davon frei.</p>
+    <div class="actions"><button class="btn small" id="copySlots">Belegung als Text kopieren</button></div>
+    <div class="slots" id="slotList"></div>
+  </section>
+</div>
+
+<!-- detail -->
+<div class="sheet" id="detailSheet"><div class="panel">
+  <div class="panel-head"><h2 id="dTitle"></h2><button class="x" data-close>×</button></div>
+  <div class="panel-body" id="dBody"></div>
+</div></div>
+
+<!-- entry mode -->
+<div class="sheet" id="entrySheet"><div class="panel">
+  <div class="panel-head"><h2 id="eTitle"></h2><button class="x" data-close>×</button></div>
+  <div class="panel-body" id="eBody"></div>
+</div></div>
+
+<!-- editor -->
+<div class="sheet" id="editSheet"><div class="panel">
+  <div class="panel-head"><h2 id="fTitle">Rezept</h2><button class="x" data-close>×</button></div>
+  <div class="panel-body"><form class="form" id="form"></form></div>
+</div></div>
+
+<input type="file" id="fileIn" accept="image/*" multiple hidden>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- constants ---------- */
+const GAMMAS=["Movie","Still","Cine1","Cine2","Cine3","Cine4","ITU709","ITU709(800%)","S-Log2","S-Log3","HLG","HLG1","HLG2","HLG3"];
+const COLORMODES=["Movie","Still","Cinema","Pro","ITU709 Matrix","Black & White","S-Gamut","S-Gamut3.Cine","S-Gamut3"];
+const SLOTS=["PP1","PP2","PP3","PP4","PP5","PP6","PP7","PP8","PP9","PP10"];
+const DEPTH=["R","G","B","C","M","Y"];
+const DEPTH_COL={R:"#d14b3b",G:"#4f9a4a",B:"#3d63c9",C:"#3fa7b5",M:"#b8479c",Y:"#d9b43a"};
+
+/* ---------- state ---------- */
+let db=null, assets=null, canEdit=true;
+let recipes=[];           // [{id, ...data}]
+let slots={};             // {PP1: recipeId}
+let activeTag=null, query="";
+let current=null, heroIdx=0;
+let entryChecks=new Set();
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const sgn=n=>{if(n===""||n==null||isNaN(n))return"–";n=Number(n);return n>0?"+"+n:String(n)};
+function toast(t){const el=$("#toast");el.textContent=t;el.style.display="block";clearTimeout(toast._t);toast._t=setTimeout(()=>el.style.display="none",2400)}
+const ab=n=>{n=Number(n)||0;return n===0?"0":(n>0?"A":"B")+Math.abs(n)};
+const gm=n=>{n=Number(n)||0;return n===0?"0":(n>0?"G":"M")+Math.abs(n)};
+const wbText=w=>w?`${w.kelvin||"–"} K · ${ab(w.ab)} / ${gm(w.gm)}`:"–";
+const blob=id=>"/_blob/"+id;
+const slotOf=id=>SLOTS.find(s=>slots[s]===id);
+
+/* ---------- swatch (approximation) ---------- */
+function kelvinRGB(k){
+  k=Math.max(1500,Math.min(15000,k))/100;let r,g,b;
+  r=k<=66?255:329.7*Math.pow(k-60,-0.1332);
+  g=k<=66?99.47*Math.log(k)-161.12:288.12*Math.pow(k-60,-0.0755);
+  b=k>=66?255:(k<=19?0:138.52*Math.log(k-10)-305.04);
+  return [r,g,b].map(v=>Math.max(0,Math.min(255,v)));
+}
+function castColor(r){
+  const w=r.wb||{}, pp=r.pp||{};
+  const k=Number(w.kelvin)||5500;
+  // a higher camera WB value renders a warmer image
+  let c=kelvinRGB(Math.max(2000,Math.min(12000,11000-k+0)));
+  const a=Number(w.ab)||0, g=Number(w.gm)||0;
+  c=[c[0]+a*7-g*3, c[1]+g*7, c[2]-a*8-g*3];
+  const sat=1+(Number(pp.saturation)||0)/50;
+  const avg=(c[0]+c[1]+c[2])/3;
+  c=c.map(v=>avg+(v-avg)*sat);
+  return c.map(v=>Math.round(Math.max(0,Math.min(255,v))));
+}
+function swatchHTML(r){
+  const pp=r.pp||{};const c=castColor(r);
+  const bl=Number(pp.blackLevel)||0;
+  const shadow=Math.max(4,Math.min(60,18+bl*2.2));
+  const mid=`rgb(${c.map(v=>Math.round(v*.62)).join(",")})`;
+  const hi=`rgb(${c.map(v=>Math.round(v*.35+165)).join(",")})`;
+  const sh=`rgb(${[shadow,shadow*.95,shadow*.9].map(Math.round).join(",")})`;
+  const d=pp.depth||{};
+  const chips=DEPTH.map(k=>{
+    const v=Number(d[k])||0;const s=Math.max(.35,Math.min(1.25,.85+v*.05));
+    return `<div style="background:${DEPTH_COL[k]};filter:saturate(${s}) brightness(${1-v*.035})"></div>`;
+  }).join("");
+  return `<div class="swatch"><div class="tone" style="background:linear-gradient(100deg,${sh} 0%,${mid} 48%,${hi} 100%)"></div><div class="chips">${chips}</div><span class="note">Farbstimmung · grobe Annäherung</span></div>`;
+}
+
+/* ---------- gallery ---------- */
+function allTags(){const s=new Set();recipes.forEach(r=>(r.tags||[]).forEach(t=>s.add(t)));return [...s].sort((a,b)=>a.localeCompare(b,"de"))}
+function renderTags(){
+  $("#tagbar").innerHTML=[`<button class="chip ${activeTag?"":"on"}" data-tag="">Alle</button>`]
+    .concat(allTags().map(t=>`<button class="chip ${activeTag===t?"on":""}" data-tag="${esc(t)}">${esc(t)}</button>`)).join("");
+}
+function filtered(){
+  const q=query.trim().toLowerCase();
+  return recipes.filter(r=>(!activeTag||(r.tags||[]).includes(activeTag))&&
+    (!q||[r.name,r.look,(r.tags||[]).join(" "),r.notes].join(" ").toLowerCase().includes(q)))
+    .sort((a,b)=>(a.order??999)-(b.order??999)||String(a.name).localeCompare(b.name,"de"));
+}
+function renderGrid(){
+  renderTags();
+  const list=filtered();
+  if(!recipes.length){$("#grid").innerHTML=`<div class="empty" style="grid-column:1/-1">Noch keine Rezepte.${canEdit?" Leg über „+ Rezept“ das erste an.":""}</div>`;return}
+  if(!list.length){$("#grid").innerHTML=`<div class="empty" style="grid-column:1/-1">Kein Rezept passt zu dieser Auswahl.</div>`;return}
+  $("#grid").innerHTML=list.map(r=>{
+    const s=slotOf(r.id);
+    const img=(r.photos&&r.photos.length)?`<img src="${blob(r.photos[0])}" alt="" loading="lazy">`:swatchHTML(r);
+    return `<button class="card" data-open="${esc(r.id)}">
+      <div class="img">${img}${s?`<span class="badge">${s}</span>`:""}</div>
+      <div class="body"><h3>${esc(r.name)}</h3><p>${esc(r.look||"")}</p>
+      <div class="meta mono"><span>${esc(r.pp?.gamma||"–")}</span><span>${wbText(r.wb)}</span></div></div></button>`;
+  }).join("");
+}
+
+/* ---------- detail ---------- */
+function row(l,v){return `<div class="row"><span>${l}</span><span>${esc(v)}</span></div>`}
+function valuesHTML(r){
+  const p=r.pp||{},bg=p.blackGamma||{},kn=p.knee||{},d=p.depth||{},dt=p.detail||{};
+  return `<div class="vals">
+   <div class="group"><h4>Tonwerte</h4>
+     ${row("Schwarzwert",sgn(p.blackLevel))}${row("Gamma",p.gamma||"–")}
+     ${row("Schwarzgamma · Bereich",bg.range||"–")}${row("Schwarzgamma · Stufe",sgn(bg.level))}
+     ${row("Knie · Modus",kn.mode||"–")}
+     ${kn.mode==="Manuell"?row("Knie · Punkt",kn.point?kn.point+" %":"–")+row("Knie · Steigung",sgn(kn.slope)):""}
+   </div>
+   <div class="group"><h4>Farbe</h4>
+     ${row("Farbmodus",p.colorMode||"–")}${row("Sättigung",sgn(p.saturation))}${row("Farbphase",sgn(p.colorPhase))}
+     <div style="margin-top:8px;font-size:13px;color:var(--muted)">Farbtiefe</div>
+     <div class="depth">${DEPTH.map(k=>`<div><b style="color:${DEPTH_COL[k]}">${k}</b>${sgn(d[k])}</div>`).join("")}</div>
+   </div>
+   <div class="group"><h4>Detail</h4>
+     ${row("Stufe",sgn(dt.level))}${row("Modus",dt.mode||"–")}
+     ${dt.mode==="Manuell"?row("V/H-Balance",sgn(dt.vh))+row("B/W-Balance",dt.bw||"–")+row("Begrenzung",dt.limit??"–")+row("Crispening",dt.crisp??"–")+row("Lichter-Detail",dt.hl??"–"):""}
+   </div>
+   <div class="group"><h4>Weißabgleich</h4>
+     ${row("Farbtemperatur",r.wb?.kelvin?r.wb.kelvin+" K":"–")}${row("A-B (Amber/Blau)",ab(r.wb?.ab))}${row("G-M (Grün/Magenta)",gm(r.wb?.gm))}
+   </div></div>`;
+}
+function openDetail(id){
+  current=recipes.find(r=>r.id===id);if(!current)return;heroIdx=0;renderDetail();$("#detailSheet").classList.add("open");
+}
+function renderDetail(){
+  const r=current;if(!r)return;
+  const photos=r.photos||[];const s=slotOf(r.id);
+  $("#dTitle").textContent=r.name;
+  const hero=photos.length?`<img src="${blob(photos[Math.min(heroIdx,photos.length-1)])}" alt="Beispielfoto ${esc(r.name)}">`:swatchHTML(r);
+  const thumbs=photos.map((p,i)=>`<button class="t ${i===heroIdx?"on":""}" data-hero="${i}"><img src="${blob(p)}" alt=""></button>`).join("");
+  $("#dBody").innerHTML=`
+    <div class="confirm" id="delConfirm"><span style="margin-right:auto">„${esc(r.name)}“ wirklich löschen?</span><button class="btn small" data-act="cancelDel">Abbrechen</button><button class="btn small danger" data-act="doDel">Löschen</button></div>
+    <div class="confirm" id="photoConfirm"><span style="margin-right:auto">Dieses Foto aus dem Rezept entfernen?</span><button class="btn small" data-act="cancelPhoto">Abbrechen</button><button class="btn small danger" data-act="doPhoto">Entfernen</button></div>
+    <div class="hero">${hero}${s?`<span class="badge">${s}</span>`:""}</div>
+    <div class="thumbs">${thumbs}${canEdit&&assets?`<button class="btn small" data-act="upload">+ Beispielfoto</button>`:""}${canEdit&&photos.length?`<button class="btn small" data-act="rmPhoto">Foto entfernen</button>`:""}</div>
+    <p class="look">${esc(r.look||"")}</p>
+    <div class="tags">${(r.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div>
+    ${r.notes?`<div class="callout">${esc(r.notes)}</div>`:""}
+    <div class="actions">
+      <button class="btn primary" data-act="entry">An Kamera einstellen</button>
+      ${canEdit?`<label class="btn" style="display:inline-flex;gap:8px;align-items:center">Platz
+        <select data-act="slot" style="background:none;border:0;color:var(--amber)"><option value="">–</option>${SLOTS.map(p=>`<option ${s===p?"selected":""}>${p}</option>`).join("")}</select></label>
+      <button class="btn" data-act="edit">Bearbeiten</button>
+      <button class="btn" data-act="dup">Duplizieren</button>
+      <button class="btn danger" data-act="del">Löschen</button>`:""}
+    </div>
+    ${valuesHTML(r)}
+    ${r.source?`<p class="src" style="margin-top:16px">Quelle: ${r.sourceUrl?`<a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener">${esc(r.source)}</a>`:esc(r.source)}</p>`:""}`;
+}
+
+/* ---------- entry mode ---------- */
+function entrySteps(r){
+  const p=r.pp||{},bg=p.blackGamma||{},kn=p.knee||{},d=p.depth||{},dt=p.detail||{};
+  const st=[];const sec=t=>st.push({sec:t});const add=(l,v)=>st.push({l,v});
+  sec("Bildprofil");
+  add("Schwarzwert",sgn(p.blackLevel));add("Gamma",p.gamma||"–");
+  add("Schwarzgamma · Bereich",bg.range||"–");add("Schwarzgamma · Stufe",sgn(bg.level));
+  add("Knie · Modus",kn.mode||"–");
+  if(kn.mode==="Manuell"){add("Knie · Punkt",kn.point?kn.point+" %":"–");add("Knie · Steigung",sgn(kn.slope))}
+  add("Farbmodus",p.colorMode||"–");add("Sättigung",sgn(p.saturation));add("Farbphase",sgn(p.colorPhase));
+  sec("Farbtiefe");DEPTH.forEach(k=>add("Farbtiefe "+k,sgn(d[k])));
+  sec("Detail");add("Stufe",sgn(dt.level));add("Modus",dt.mode||"–");
+  if(dt.mode==="Manuell"){add("V/H-Balance",sgn(dt.vh));add("B/W-Balance",dt.bw||"–");add("Begrenzung",dt.limit??"–");add("Crispening",dt.crisp??"–");add("Lichter-Detail",dt.hl??"–")}
+  sec("Weißabgleich");add("Farbtemperatur",r.wb?.kelvin?r.wb.kelvin+" K":"–");add("A-B",ab(r.wb?.ab));add("G-M",gm(r.wb?.gm));
+  return st;
+}
+function openEntry(){entryChecks=new Set();renderEntry();$("#detailSheet").classList.remove("open");$("#entrySheet").classList.add("open")}
+function renderEntry(){
+  const r=current;const steps=entrySteps(r);const s=slotOf(r.id)||"PPx";
+  const total=steps.filter(x=>!x.sec).length;
+  $("#eTitle").textContent=r.name+" einstellen";
+  let i=0;
+  $("#eBody").innerHTML=`
+    <div class="path">MENU → Kameraeinstellungen 1 → <b>Bildprofil</b> → <b>${s}</b> → ► (Werte von oben nach unten). Weißabgleich: MENU → Kameraeinstellungen 1 → Weißabgleich → Farbtemp./Filter, dann ► für A-B / G-M.<br><span class="hint">Menübezeichnungen können je nach Sprache und Firmware leicht abweichen.</span></div>
+    <div style="display:flex;justify-content:space-between;margin-top:14px;font-size:13px;color:var(--muted)"><span>${entryChecks.size} von ${total} erledigt</span><button class="btn small" data-act="resetEntry">Zurücksetzen</button></div>
+    <div class="progress"><div style="width:${total?entryChecks.size/total*100:0}%"></div></div>
+    <ul class="steps">${steps.map(x=>{
+      if(x.sec)return `<li class="step sec">${esc(x.sec)}</li>`;
+      const k=i++;const on=entryChecks.has(k);
+      return `<li class="step ${on?"done":""}" data-step="${k}"><span class="box">${on?"✓":""}</span><span class="lbl">${esc(x.l)}</span><span class="v">${esc(x.v)}</span></li>`;
+    }).join("")}</ul>
+    ${entryChecks.size===total&&total?`<div class="callout" style="margin-top:14px">Fertig. Mach ein Testfoto und lade es als Beispielfoto hoch.</div>`:""}
+    <div class="actions"><button class="btn" data-act="backDetail">Zurück zum Rezept</button></div>`;
+}
+
+/* ---------- slots ---------- */
+function renderSlots(){
+  const opts=id=>`<option value="">– frei –</option>`+[...recipes].sort((a,b)=>String(a.name).localeCompare(b.name,"de")).map(r=>`<option value="${esc(r.id)}" ${r.id===id?"selected":""}>${esc(r.name)}</option>`).join("");
+  $("#slotList").innerHTML=SLOTS.map(p=>{
+    const r=recipes.find(x=>x.id===slots[p]);
+    return `<div class="slot"><span class="pp">${p}</span>
+      <div>${r?`<div class="name">${esc(r.name)}</div><div class="sub mono">${esc(r.pp?.gamma||"")} · WB ${wbText(r.wb)}</div>`:`<div class="sub">frei (Werkseinstellung oder eigenes Profil)</div>`}</div>
+      ${canEdit?`<select data-slot="${p}">${opts(slots[p])}</select>`:(r?`<button class="btn small" data-open="${esc(r.id)}">Öffnen</button>`:"<span></span>")}</div>`;
+  }).join("");
+}
+async function setSlot(p,id){
+  const next={...slots};
+  if(id)SLOTS.forEach(s=>{if(next[s]===id)next[s]=null});
+  next[p]=id||null;
+  slots=next;renderAll();
+  if(db){try{await db.doc("config/slots").set({map:next})}catch(e){toast("Speichern fehlgeschlagen")}}
+}
+
+/* ---------- editor ---------- */
+const range=(a,b,step=1)=>{const o=[];for(let v=a;v<=b+1e-9;v+=step)o.push(Math.round(v*100)/100);return o};
+function sel(name,opts,val,fmt=x=>x){return `<select name="${name}">${opts.map(o=>`<option value="${esc(o)}" ${String(o)===String(val)?"selected":""}>${esc(fmt(o))}</option>`).join("")}</select>`}
+function num(name,val,min,max,step=1){return `<input type="number" name="${name}" value="${val??""}" min="${min}" max="${max}" step="${step}">`}
+function dl(name,val,list,id){return `<input name="${name}" value="${esc(val??"")}" list="${id}"><datalist id="${id}">${list.map(x=>`<option value="${esc(x)}">`).join("")}</datalist>`}
+function blank(){return{name:"",look:"",tags:[],notes:"",source:"",sourceUrl:"",photos:[],
+  pp:{blackLevel:0,gamma:"Still",blackGamma:{range:"Middle",level:0},knee:{mode:"Auto",point:"",slope:""},colorMode:"Still",saturation:0,colorPhase:0,
+  depth:{R:0,G:0,B:0,C:0,M:0,Y:0},detail:{level:0,mode:"Auto",vh:0,bw:"Type3",limit:7,crisp:0,hl:0}},wb:{kelvin:5500,ab:0,gm:0}}}
+let editing=null;
+function openEditor(r){
+  editing=r?structuredClone(r):blank();const e=editing,p=e.pp;
+  $("#fTitle").textContent=r?"Rezept bearbeiten":"Neues Rezept";
+  $("#form").innerHTML=`
+   <fieldset class="fgroup"><legend>Allgemein</legend><div class="fields">
+     <label class="f wide">Name<input name="name" required value="${esc(e.name)}"></label>
+     <label class="f wide">Look (kurz beschrieben)<input name="look" value="${esc(e.look)}"></label>
+     <label class="f wide">Stichworte (mit Komma getrennt)<input name="tags" value="${esc((e.tags||[]).join(", "))}"></label>
+     <label class="f wide">Notizen<textarea name="notes">${esc(e.notes)}</textarea></label>
+     <label class="f">Quelle<input name="source" value="${esc(e.source)}"></label>
+     <label class="f">Quell-Link<input name="sourceUrl" type="url" value="${esc(e.sourceUrl)}"></label>
+   </div></fieldset>
+   <fieldset class="fgroup"><legend>Tonwerte</legend><div class="fields">
+     <label class="f">Schwarzwert${num("blackLevel",p.blackLevel,-15,15)}</label>
+     <label class="f">Gamma${dl("gamma",p.gamma,GAMMAS,"gl")}</label>
+     <label class="f">Schwarzgamma · Bereich${sel("bgRange",["Wide","Middle","Narrow"],p.blackGamma?.range)}</label>
+     <label class="f">Schwarzgamma · Stufe${num("bgLevel",p.blackGamma?.level,-7,7)}</label>
+     <label class="f">Knie · Modus${sel("kneeMode",["Auto","Manuell"],p.knee?.mode)}</label>
+     <label class="f">Knie · Punkt (%)${num("kneePoint",p.knee?.point,75,105,2.5)}</label>
+     <label class="f">Knie · Steigung${num("kneeSlope",p.knee?.slope,-5,5)}</label>
+   </div></fieldset>
+   <fieldset class="fgroup"><legend>Farbe</legend><div class="fields">
+     <label class="f">Farbmodus${dl("colorMode",p.colorMode,COLORMODES,"cl")}</label>
+     <label class="f">Sättigung${num("saturation",p.saturation,-32,32)}</label>
+     <label class="f">Farbphase${num("colorPhase",p.colorPhase,-7,7)}</label>
+     ${DEPTH.map(k=>`<label class="f">Farbtiefe ${k}${num("d"+k,p.depth?.[k],-7,7)}</label>`).join("")}
+   </div></fieldset>
+   <fieldset class="fgroup"><legend>Detail</legend><div class="fields">
+     <label class="f">Stufe${num("dtLevel",p.detail?.level,-7,7)}</label>
+     <label class="f">Modus${sel("dtMode",["Auto","Manuell"],p.detail?.mode)}</label>
+     <label class="f">V/H-Balance${num("dtVh",p.detail?.vh,-2,2)}</label>
+     <label class="f">B/W-Balance${sel("dtBw",["Type1","Type2","Type3","Type4","Type5"],p.detail?.bw)}</label>
+     <label class="f">Begrenzung${num("dtLimit",p.detail?.limit,0,7)}</label>
+     <label class="f">Crispening${num("dtCrisp",p.detail?.crisp,0,7)}</label>
+     <label class="f">Lichter-Detail${num("dtHl",p.detail?.hl,0,4)}</label>
+   </div></fieldset>
+   <fieldset class="fgroup"><legend>Weißabgleich</legend><div class="fields">
+     <label class="f">Farbtemperatur (K)${num("kelvin",e.wb?.kelvin,2500,9900,100)}</label>
+     <label class="f">A-B (+ Amber / − Blau)${num("ab",e.wb?.ab,-7,7,0.25)}</label>
+     <label class="f">G-M (+ Grün / − Magenta)${num("gm",e.wb?.gm,-7,7,0.25)}</label>
+   </div><p class="hint">Beispiel: „A2-M1“ = A-B +2, G-M −1.</p></fieldset>
+   <div class="actions"><button type="submit" class="btn primary">Speichern</button><button type="button" class="btn" data-close>Abbrechen</button></div>`;
+  $("#detailSheet").classList.remove("open");$("#editSheet").classList.add("open");
+}
+function readForm(){
+  const f=new FormData($("#form"));const g=k=>f.get(k);const n=k=>{const v=g(k);return v===""||v==null?"":Number(v)};
+  const e=editing;
+  Object.assign(e,{name:g("name").trim(),look:g("look").trim(),notes:g("notes").trim(),source:g("source").trim(),sourceUrl:g("sourceUrl").trim(),
+    tags:g("tags").split(",").map(s=>s.trim()).filter(Boolean)});
+  e.pp={blackLevel:n("blackLevel"),gamma:g("gamma").trim(),blackGamma:{range:g("bgRange"),level:n("bgLevel")},
+    knee:{mode:g("kneeMode"),point:n("kneePoint"),slope:n("kneeSlope")},colorMode:g("colorMode").trim(),saturation:n("saturation"),colorPhase:n("colorPhase"),
+    depth:Object.fromEntries(DEPTH.map(k=>[k,n("d"+k)])),
+    detail:{level:n("dtLevel"),mode:g("dtMode"),vh:n("dtVh"),bw:g("dtBw"),limit:n("dtLimit"),crisp:n("dtCrisp"),hl:n("dtHl")}};
+  e.wb={kelvin:n("kelvin"),ab:n("ab")||0,gm:n("gm")||0};
+  return e;
+}
+function slug(s){return (s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"rezept").slice(0,40)}
+async function saveRecipe(e){
+  const {id,...data}=e;
+  const rid=id||slug(e.name)+"-"+Math.random().toString(36).slice(2,6);
+  if(data.order==null)data.order=(Math.max(0,...recipes.map(r=>r.order||0))+1);
+  data.updated=new Date().toISOString();
+  if(!db){toast("Kein Speicher verfügbar – Änderung nur in dieser Ansicht");upsertLocal({id:rid,...data});return rid}
+  await db.doc("recipes/"+rid).set(data);
+  upsertLocal({id:rid,...data});
+  return rid;
+}
+function upsertLocal(r){const i=recipes.findIndex(x=>x.id===r.id);if(i>=0)recipes[i]=r;else recipes.push(r);renderAll()}
+
+/* ---------- photos ---------- */
+function resize(file,max=2000){
+  return new Promise((res,rej)=>{
+    const img=new Image();const url=URL.createObjectURL(file);
+    img.onload=()=>{const s=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement("canvas");
+      c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(url);c.toBlob(b=>b?res(b):rej(new Error("encode")),"image/jpeg",.88)};
+    img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error("load"))};img.src=url;
+  });
+}
+async function uploadPhotos(files){
+  if(!assets||!current)return;
+  const r=current;const ids=[...(r.photos||[])];
+  for(const f of files){
+    try{toast("Lade Foto hoch …");const b=await resize(f);const a=await assets.upload(b);ids.push(a.id)}
+    catch(e){toast("Upload fehlgeschlagen");}
+  }
+  r.photos=ids;
+  try{await db.doc("recipes/"+r.id).update({photos:ids});toast("Foto gespeichert")}catch(e){toast("Speichern fehlgeschlagen")}
+  heroIdx=ids.length-1;renderAll();
+}
+async function removePhoto(){
+  const r=current;const ids=[...(r.photos||[])];const id=ids[heroIdx];if(!id)return;
+  ids.splice(heroIdx,1);r.photos=ids;heroIdx=0;
+  try{await db.doc("recipes/"+r.id).update({photos:ids});if(assets)assets.delete(id).catch(()=>{})}catch(e){toast("Speichern fehlgeschlagen")}
+  renderAll();
+}
+
+/* ---------- render all ---------- */
+function renderAll(){
+  renderGrid();renderSlots();
+  if(current){current=recipes.find(r=>r.id===current.id)||current;if($("#detailSheet").classList.contains("open"))renderDetail()}
+  $("#newBtn").hidden=!canEdit;
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click",async ev=>{
+  const t=ev.target;
+  const tab=t.closest(".tabs button");
+  if(tab){document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b===tab));
+    const v=tab.dataset.view;$("#gallery").hidden=v!=="gallery";$("#slots").hidden=v!=="slots";return}
+  const chip=t.closest("[data-tag]");if(chip){activeTag=chip.dataset.tag||null;renderGrid();return}
+  const op=t.closest("[data-open]");if(op){openDetail(op.dataset.open);return}
+  if(t.closest("[data-close]")){t.closest(".sheet").classList.remove("open");return}
+  if(t.classList.contains("sheet")){t.classList.remove("open");return}
+  const h=t.closest("[data-hero]");if(h){heroIdx=Number(h.dataset.hero);renderDetail();return}
+  const st=t.closest("[data-step]");if(st){const k=Number(st.dataset.step);entryChecks.has(k)?entryChecks.delete(k):entryChecks.add(k);renderEntry();return}
+  const a=t.closest("[data-act]");if(!a||a.tagName==="SELECT")return;
+  switch(a.dataset.act){
+    case"entry":openEntry();break;
+    case"backDetail":$("#entrySheet").classList.remove("open");renderDetail();$("#detailSheet").classList.add("open");break;
+    case"resetEntry":entryChecks=new Set();renderEntry();break;
+    case"edit":openEditor(current);break;
+    case"dup":{const c=structuredClone(current);delete c.id;delete c.order;c.name=current.name+" (Variante)";c.photos=[];
+      try{const id=await saveRecipe(c);openDetail(id);toast("Variante angelegt")}catch(e){toast("Speichern fehlgeschlagen")}break}
+    case"del":$("#delConfirm").classList.add("open");break;
+    case"cancelDel":$("#delConfirm").classList.remove("open");break;
+    case"doDel":{const id=current.id;try{if(db)await db.doc("recipes/"+id).delete();recipes=recipes.filter(r=>r.id!==id);
+      const s=slotOf(id);if(s)await setSlot(s,null);$("#detailSheet").classList.remove("open");current=null;renderAll();toast("Rezept gelöscht")}catch(e){toast("Löschen fehlgeschlagen")}break}
+    case"upload":$("#fileIn").click();break;
+    case"rmPhoto":$("#photoConfirm").classList.add("open");break;
+    case"cancelPhoto":$("#photoConfirm").classList.remove("open");break;
+    case"doPhoto":removePhoto();break;
+  }
+});
+document.addEventListener("change",ev=>{
+  const t=ev.target;
+  if(t.matches("[data-slot]"))setSlot(t.dataset.slot,t.value);
+  if(t.matches("[data-act=slot]")){if(t.value)setSlot(t.value,current.id);else{const s=slotOf(current.id);if(s)setSlot(s,null)}}
+});
+$("#fileIn").addEventListener("change",e=>{const f=[...e.target.files];e.target.value="";if(f.length)uploadPhotos(f)});
+$("#q").addEventListener("input",e=>{query=e.target.value;renderGrid()});
+$("#newBtn").addEventListener("click",()=>openEditor(null));
+$("#form").addEventListener("submit",async e=>{
+  e.preventDefault();const r=readForm();if(!r.name){toast("Bitte einen Namen eingeben");return}
+  try{const id=await saveRecipe(r);$("#editSheet").classList.remove("open");openDetail(id);toast("Gespeichert")}
+  catch(err){toast(err&&err.code==="invalid_argument"?"Keine Schreibrechte":"Speichern fehlgeschlagen")}
+});
+$("#copySlots").addEventListener("click",async()=>{
+  const txt=SLOTS.map(p=>{const r=recipes.find(x=>x.id===slots[p]);return `${p}: ${r?r.name+" — WB "+wbText(r.wb):"frei"}`}).join("\n");
+  try{await navigator.clipboard.writeText(txt);toast("Belegung kopiert")}catch(e){toast("Kopieren nicht möglich")}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".sheet.open").forEach(s=>s.classList.remove("open"))});
+
+/* ---------- boot ---------- */
+renderAll();
+(async()=>{
+  const cl=window.claude;
+  if(!cl||!cl.use){$("#status").textContent="Speicher nicht verfügbar – öffne die Seite über ihren claude.ai-Link.";return}
+  const [d,u,a]=await Promise.all([cl.use("db"),cl.use("user"),cl.use("assets")]);
+  db=d;assets=a;
+  if(u&&u.canEdit){try{const v=await u.canEdit();if(v===false)canEdit=false}catch(e){}}
+  if(!db){$("#status").textContent="Speicher nicht verfügbar – bitte anmelden.";canEdit=false;renderAll();return}
+  let timer=setTimeout(()=>{$("#status").textContent="Rezepte noch nicht erreichbar – Verbindung prüfen."},10000);
+  db.collection("recipes").onSnapshot(snap=>{
+    recipes=snap.docs.map(x=>({id:x.id,...x.data()}));
+    if(!snap.metadata.fromCache){clearTimeout(timer);$("#status").textContent=""}
+    renderAll();
+  },err=>{clearTimeout(timer);$("#status").textContent="Rezepte konnten nicht geladen werden."});
+  db.doc("config/slots").onSnapshot(s=>{slots=(s.exists&&s.data().map)||{};renderAll()},()=>{});
+})();
+</script>
+</body>
+</html>
